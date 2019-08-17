@@ -84,9 +84,13 @@ enum ESM { SMART_MATRIX };
 enum OWS2811 { OCTOWS2811,OCTOWS2811_400, OCTOWS2813};
 enum SWS2812 { WS2812SERIAL };
 
+enum EAnalog { ANALOGLED };
+
 #ifdef HAS_PIXIE
 template<uint8_t DATA_PIN, EOrder RGB_ORDER> class PIXIE : public PixieController<DATA_PIN, RGB_ORDER> {};
 #endif
+
+template <uint8_t RED_PIN, uint8_t GREEN_PIN, uint8_t BLUE_PIN, bool PWM_FLICKER_FIX> class ANALOG : public AnalogController<RED_PIN, GREEN_PIN, BLUE_PIN, PWM_FLICKER_FIX> {};
 
 #ifdef FASTLED_HAS_CLOCKLESS
 template<uint8_t DATA_PIN> class NEOPIXEL : public WS2812Controller800Khz<DATA_PIN, GRB> {};
@@ -246,6 +250,11 @@ public:
 			case APA102: { static APA102Controller<DATA_PIN, CLOCK_PIN> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 			case SK9822: { static SK9822Controller<DATA_PIN, CLOCK_PIN> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 		}
+	}
+
+	// I don't know how this thing works but let's do it!
+	template<EAnalog CHIPSET, uint8_t RED_PIN, uint8_t GREEN_PIN, uint8_t BLUE_PIN, bool PWM_FLICKER_FIX = false> static CLEDController &addLeds(struct CRGB *data, int nLedsOrOffset, int nLedsIfOffset = 0) {
+		static AnalogController<RED_PIN, GREEN_PIN, BLUE_PIN, PWM_FLICKER_FIX> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset);
 	}
 
 	template<ESPIChipsets CHIPSET,  uint8_t DATA_PIN, uint8_t CLOCK_PIN, EOrder RGB_ORDER > static CLEDController &addLeds(struct CRGB *data, int nLedsOrOffset, int nLedsIfOffset = 0) {

@@ -64,6 +64,46 @@ protected:
 #endif
 #endif
 
+/// Analog controller class, directly control your led(s) using PWM
+/// @tparam RED_PIN the pin for the red channel
+/// @tparam GREEN_PIN the pin for the green channel
+/// @tparam BLUE_PIN the pin for the BLUE channel
+/// @tparam PWM_FLICKER_FIX Leds will flicker because pwm frequency is unequal between pins. Setting this to true will fix this behaviour BUT DELAYS WILL NOT WORK
+template <uint8_t RED_PIN, uint8_t GREEN_PIN, uint8_t BLUE_PIN, bool PWM_FLICKER_FIX = false>
+class AnalogController : public CPixelLEDController<RGB> {
+
+ public:
+  AnalogController() {}
+  virtual void init() {
+		if (PWM_FLICKER_FIX){
+			TCCR0A = _BV(COM0A1) | _BV(COM0B1) | _BV(WGM00);
+		}
+		pinMode(RED_PIN, OUTPUT);
+		pinMode(GREEN_PIN, OUTPUT);
+		pinMode(BLUE_PIN, OUTPUT);
+  }
+
+ protected:
+  virtual void showPixels(PixelController<RGB>& pixels) {
+		// while (pixels.has(1)) {
+		uint8_t r = pixels.loadAndScale0();
+		// Serial.print(r);
+		// Serial.print(' ');
+		uint8_t g = pixels.loadAndScale1();
+		// Serial.print(g);
+		// Serial.print(' ');
+		uint8_t b = pixels.loadAndScale2();
+		// Serial.print(b);
+		// Serial.println(' ');
+		analogWrite(RED_PIN, r);
+		analogWrite(GREEN_PIN, g);
+		analogWrite(BLUE_PIN, b);
+		pixels.advanceData();
+		pixels.stepDithering();
+		// }
+  }
+};
+
 ///@name Clocked chipsets - nominally SPI based these chipsets have a data and a clock line.
 ///@{
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
